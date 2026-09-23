@@ -276,6 +276,13 @@ async function goto(id) {
   }
 
   pending = enterNode(node, state);
+  // 02 연습 일정은 메신저 대화가 시작되기 전에 장면 제목을 한 번만 보여 준다.
+  // 첫 시간 표지는 제목 화면의 부제로 쓰고, 이후 시간·장소 표지는 대화방 안에서만 갱신한다.
+  const chatIntroPlaceIndex = chatMode ? pending.findIndex(line => line.kind === 'place') : -1;
+  if (chatIntroPlaceIndex >= 0) {
+    const [introPlace] = pending.splice(chatIntroPlaceIndex, 1);
+    el.place.textContent = introPlace.text;
+  }
   onDone = node.type === 'choice'
     ? () => showChoices(node)
     : node.type === 'menu'
@@ -302,6 +309,16 @@ async function goto(id) {
     suppressNextPlaceTransition = true;
     const outfit = state.record.의상 === '남색검정안' ? 'navy' : 'white';
     showTransition({ ...ENDINGS[id], button: '이야기 이어 보기', image: `assets/ending/${ENDING_ART[id][outfit]}` }, step);
+    return;
+  }
+  if (chatIntroPlaceIndex >= 0) {
+    showTransition({
+      tone: 'scene',
+      eyebrow: segment.title,
+      title: node.title || '새로운 장면',
+      meta: el.place.textContent,
+      button: '장면 시작',
+    }, step);
     return;
   }
   step();
@@ -337,6 +354,8 @@ function step() {
   if (pending.length && pending[0].kind === 'place') {
     const place = pending.shift().text;
     el.place.textContent = place;
+    // 메신저 장면에서는 장소·시간을 바꿔도 같은 장면 제목을 다시 띄우지 않는다.
+    if (chatMode) return step();
     if (suppressNextPlaceTransition) {
       suppressNextPlaceTransition = false;
       return step();
@@ -367,11 +386,16 @@ function showTransition({ tone, eyebrow, title, meta, button, image }, after) {
   el.transitionScreen.hidden = false;
   document.body.classList.add('transitioning');
   el.transitionContinue.focus();
-  el.transitionContinue.onclick = () => {
+  el.transitionContinue.onclick = (event) => {
+    // 장면 전환 버튼을 누른 같은 클릭이, 전환 화면이 사라진 뒤 아래의
+    // '다음' 버튼까지 전달되면 첫 대사·지문이 바로 넘어갈 수 있다.
+    event.stopPropagation();
     el.transitionScreen.hidden = true;
     document.body.classList.remove('transitioning');
     el.transitionContinue.onclick = null;
-    after();
+    // 현재 클릭 처리가 완전히 끝난 뒤 다음 줄을 그려, 새로 나타난
+    // 진행 버튼이 같은 클릭을 받지 않게 한다.
+    window.setTimeout(after, 0);
   };
 }
 
