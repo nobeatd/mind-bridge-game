@@ -1,0 +1,245 @@
+{
+  "segment": "S3",
+  "title": "무대 의상",
+  "source": "../대본/03_무대의상.md v0.4 (내용 확정본 2026-09-13)",
+  "background": "bg03-youth-center-practice.jpg",
+  "start": "S3-01",
+  "nodes": {
+    "S3-01": {
+      "type": "choice",
+      "title": "같은 옷을 입어야 한 팀처럼 보일까",
+      "lines": [
+        { "kind": "place", "text": "공연 준비가 이어지는 주말, 청소년센터" },
+        { "kind": "narrate", "text": "연습을 마치고 의상 이야기가 나온다. 아직 아무것도 정하지 않았다." },
+        { "kind": "say", "who": "해슬", "text": "무대 의상 흰 상의에 청바지 어때? 같이 서면 한 팀 같을 것 같아서." },
+        { "kind": "say", "who": "서연", "text": "각자 있는 남색이나 검정 입는 것도 괜찮지 않아? 색만 맞추는 거지." },
+        { "kind": "say", "who": "해슬", "text": "그것도 있네." },
+        { "kind": "narrate", "text": "잠깐 뒤." },
+        { "kind": "say", "who": "해슬", "text": "난 밝은 쪽이 무대에서 더 잘 보일 것 같아서. 너는 어때?" }
+      ],
+      "display": ["B", "C", "A"],
+      "options": {
+        "A": {
+          "gesture": "두 사람을 번갈아 보며",
+          "text": "잠깐, 우리 지금 색을 고르는 거야, 아니면 다 똑같이 맞출지를 정하는 거야? 그 둘이 섞여서 얘기가 계속 도는 것 같아.",
+          "appropriate": true,
+          "area": "mediation",
+          "method": ["조2"],
+          "response": [
+            { "kind": "say", "who": "해슬", "text": "…아. 나는 둘 다 생각하고 말했네." },
+            { "kind": "narrate", "text": "잠깐 뒤." },
+            { "kind": "say", "who": "해슬", "text": "같이 서면 한 팀 같아 보이는 게 제일 좋아서. 색은 그다음이고." }
+          ],
+          "next": "S3-02"
+        },
+        "B": {
+          "gesture": "해슬을 보며",
+          "text": "난 남색 쪽이 나은데. 넌 왜 흰색이 더 좋아?",
+          "appropriate": true,
+          "area": "mediation",
+          "method": ["조6", "공3"],
+          "response": [
+            { "kind": "say", "who": "해슬", "text": "어두우면 무대에서 잘 안 보일까 봐." },
+            { "kind": "narrate", "text": "잠깐 뒤." },
+            { "kind": "say", "who": "해슬", "text": "근데 남색도 색만 맞추면 될 것 같긴 하네." }
+          ],
+          "next": "S3-02"
+        },
+        "C": {
+          "gesture": "의자에 기대며",
+          "text": "옷까지 똑같이 입는 건 좀 부담스러운데. 공연보다 옷에 더 신경 쓰는 것 같아서.",
+          "appropriate": false,
+          "feedback": "해슬이 공연보다 옷에 더 신경 쓴다는 짐작을 사실처럼 말했어요.",
+          "area": null,
+          "method": ["조3 위반"],
+          "response": [
+            { "kind": "narrate", "text": "해슬의 웃음이 멈춘다." },
+            { "kind": "say", "who": "해슬", "text": "나도 연주 신경 써." },
+            { "kind": "narrate", "text": "해슬이 잠깐 말을 고른다." },
+            { "kind": "say", "who": "해슬", "text": "같이 준비한 느낌이 좋겠다는 거였는데." }
+          ],
+          "flags": ["recovery:S3-01-C"],
+          "next": "S3-02"
+        }
+      }
+    },
+
+    "S3-02": {
+      "type": "choice",
+      "title": "함께 입을 옷을 정하자",
+      "lines": [
+        { "kind": "say", "who": "민서", "text": "어느 쪽이든 준비되는지부터 보자." },
+        { "kind": "narrate", "text": "여섯 명이 확인한 결과 두 안 모두 준비할 수 있고, 연주에 불편하지 않게 고를 수 있다." },
+        { "kind": "say", "who": "해슬", "text": "둘 다 되긴 하네." },
+        { "kind": "narrate", "text": "해슬이 휴대전화를 내려놓는다." },
+        { "kind": "say", "who": "해슬", "text": "난 그래도 흰색이 더 좋긴 한데, 남색이랑 검정도 색은 맞출 수 있으니까." },
+        { "kind": "say", "who": "해슬", "text": "어떻게 할지 정하자." }
+      ],
+      "display": ["C", "A", "B"],
+      "options": {
+        "A": {
+          "gesture": "고개를 끄덕이며",
+          "text": "그럼 흰 상의랑 청바지로 하자. 대신 모양까지 똑같이는 말고, 각자 편한 걸로.",
+          "appropriate": true,
+          "area": "mediation",
+          "method": ["조5", "조6"],
+          "variants": [
+            {
+              "when": { "chose": "S3-01-C" },
+              "text": "아까 옷에 더 신경 쓴다고 한 건 취소할게. 그럼 흰 상의랑 청바지로 하자. 대신 모양까지 똑같이는 말고, 각자 편한 걸로."
+            },
+            {
+              "when": { "notChose": "S3-01-C" },
+              "text": "그럼 흰 상의랑 청바지로 하자. 대신 모양까지 똑같이는 말고, 각자 편한 걸로."
+            }
+          ],
+          "response": [
+            { "kind": "say", "who": "해슬", "text": "…그 말 취소해 줘서 고마워.", "when": { "chose": "S3-01-C" } },
+            { "kind": "say", "who": "해슬", "text": "응, 색만 맞추고 각자 편한 걸로 입자." },
+            { "kind": "narrate", "text": "다른 네 친구도 고개를 끄덕인다." }
+          ],
+          "set": { "의상": "흰색안" },
+          "next": [
+            { "goto": "S3-END", "set": { "S3": "해결", "S3Basis": ["S3-02-A"] } }
+          ]
+        },
+        "B": {
+          "gesture": "해슬 쪽으로 몸을 돌리며",
+          "text": "나는 남색·검정으로 하고 싶어. 평소에 다들 그런 색을 많이 입기도 하고, 무대 조명이 엄청 밝으니까, 남색도 잘 보일 거야.",
+          "appropriate": true,
+          "area": "mediation",
+          "method": ["조4", "조6"],
+          "variants": [
+            {
+              "when": { "chose": "S3-01-C" },
+              "text": "아까 옷에 더 신경 쓴다고 한 건 취소할게. 나는 남색·검정으로 하고 싶어. 평소에 다들 그런 색을 많이 입기도 하고, 무대 조명이 엄청 밝으니까, 남색도 잘 보일 거야."
+            },
+            {
+              "when": { "notChose": "S3-01-C" },
+              "text": "나는 남색·검정으로 하고 싶어. 평소에 다들 그런 색을 많이 입기도 하고, 무대 조명이 엄청 밝으니까, 남색도 잘 보일 거야."
+            }
+          ],
+          "response": [
+            { "kind": "say", "who": "해슬", "text": "…그 말 취소해 줘서 고마워.", "when": { "chose": "S3-01-C" } },
+            { "kind": "say", "who": "해슬", "text": "조금 아쉽긴 한데." },
+            { "kind": "narrate", "text": "잠깐 뒤." },
+            { "kind": "say", "who": "해슬", "text": "네가 왜 그런지도 알겠어. 그 색 안에서 맞춰 보자." },
+            { "kind": "narrate", "text": "다른 네 친구도 동의한다." }
+          ],
+          "set": { "의상": "남색검정안" },
+          "next": [
+            { "goto": "S3-END", "set": { "S3": "해결", "S3Basis": ["S3-02-B"] } }
+          ]
+        },
+        "C": {
+          "gesture": "휴대전화를 보며",
+          "text": "그냥 네가 원하는 흰색으로 하자. 난 상관없으니까 옷 얘기는 그만하자.",
+          "appropriate": false,
+          "feedback": "내 부담을 밝히지 않고 해슬의 의견에 맞추며 대화를 끝냈어요.",
+          "area": null,
+          "method": ["조4 결여"],
+          "response": [
+            { "kind": "say", "who": "해슬", "text": "…흰색으로 하면 끝나는 건 아닌 것 같은데." },
+            { "kind": "narrate", "text": "해슬이 나를 본다." },
+            { "kind": "say", "who": "해슬", "text": "너 그냥 맞춰 주는 거잖아." }
+          ],
+          "flags": ["recovery:S3-02-C"],
+          "set": { "의상예정": "흰색안 예정" },
+          "next": "S3-R1"
+        }
+      }
+    },
+
+    "S3-R1": {
+      "type": "choice",
+      "title": "정했으니 끝난 걸까",
+      "lines": [
+        { "kind": "say", "who": "해슬", "text": "옷은 흰색으로 해도 돼." },
+        { "kind": "narrate", "text": "잠깐 뒤." },
+        { "kind": "say", "who": "해슬", "text": "근데 네 생각도 알고 정하고 싶어. 아까 그 말 걸려서." }
+      ],
+      "display": ["A", "B"],
+      "options": {
+        "A": {
+          "gesture": "해슬을 마주 보며",
+          "appropriate": true,
+          "area": "mediation",
+          "method": ["조7 회복", "조4", "조5"],
+          "variants": [
+            {
+              "when": { "chose": "S3-01-C" },
+              "text": "옷에 더 신경 쓴다고 하고 말까지 끊어서 미안해. 나는 편한 옷이 중요해. 색만 맞추고 모양은 각자 골라도 될까?",
+              "response": [
+                { "kind": "say", "who": "해슬", "text": "응. 나도 모양까지 같아야 하는 건 아니야." },
+                { "kind": "narrate", "text": "다른 네 친구도 동의한다." },
+                { "kind": "say", "who": "해슬", "text": "내가 바란 건 같이 준비한 느낌이었어." }
+              ]
+            },
+            {
+              "when": { "notChose": "S3-01-C" },
+              "text": "상관없다고 말 끊어서 미안해. 나는 편한 옷이 중요해. 색만 맞추고 모양은 각자 골라도 될까?",
+              "response": [
+                { "kind": "say", "who": "해슬", "text": "응. 나도 모양까지 같아야 하는 건 아니야." },
+                { "kind": "narrate", "text": "다른 네 친구도 동의한다." }
+              ]
+            }
+          ],
+          "set": { "의상": "흰색안" },
+          "next": [
+            { "goto": "S3-END", "set": { "S3": "해결", "S3Basis": ["S3-R1-A"] } }
+          ]
+        },
+        "B": {
+          "gesture": "가방을 메며",
+          "text": "흰 상의에 청바지면 되잖아. 더 얘기하고 싶지 않아. 그걸로 정하고 넘어가자.",
+          "appropriate": false,
+          "feedback": "해슬이 아직 전하고 싶은 말을 듣기 전에 대화를 끝냈어요.",
+          "area": null,
+          "method": ["공1 결여"],
+          "response": [
+            { "kind": "narrate", "text": "해슬이 잠시 나를 보다가 시선을 내린다." },
+            { "kind": "say", "who": "해슬", "text": "옷은 그렇게 준비할게." },
+            { "kind": "narrate", "text": "잠깐 뒤." },
+            { "kind": "say", "who": "해슬", "text": "근데 내 말은 다 안 전해진 것 같아." }
+          ],
+          "set": { "의상": "흰색안" },
+          "next": [
+            { "goto": "S3-END", "set": { "S3": "미해결", "S3Basis": ["S3-R1-B"] } }
+          ]
+        }
+      }
+    },
+
+    "S3-END": {
+      "type": "record",
+      "title": "의상 결정 기록",
+      "lines": [
+        {
+          "kind": "oneOf",
+          "cases": [
+            {
+              "when": { "all": [ { "is": ["S3", "해결"] }, { "is": ["의상", "흰색안"] } ] },
+              "lines": [
+                { "kind": "narrate", "text": "흰 상의와 청바지로 색을 맞추고, 모양은 각자 움직이기 편한 것으로 고르기로 했다." }
+              ]
+            },
+            {
+              "when": { "all": [ { "is": ["S3", "해결"] }, { "is": ["의상", "남색검정안"] } ] },
+              "lines": [
+                { "kind": "narrate", "text": "각자 가진 남색·검정 상의를 입고, 하의는 편한 것으로 준비하기로 했다. 해슬은 흰색이 조금 아쉽다고 했다." }
+              ]
+            },
+            {
+              "when": { "all": [ { "is": ["S3", "미해결"] }, { "is": ["의상", "흰색안"] } ] },
+              "lines": [
+                { "kind": "narrate", "text": "준비 목록에는 흰 상의와 청바지가 적혔다. 해슬은 더 말하지 않았고, 나도 묻지 않았다." }
+              ]
+            }
+          ]
+        },
+        { "kind": "narrate", "text": "공연이 가까워질 무렵, 합주에 소리를 더할지 새로운 이야기가 나온다." }
+      ],
+      "next": "S4-01"
+    }
+  }
+}
