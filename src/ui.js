@@ -481,7 +481,7 @@ function setEndingStatus(id) {
 }
 
 function render(line, target = el.body) {
-  const reviewLine = ['card', 'recall', 'reflection', 'retryComparison'].includes(line.kind);
+  const reviewLine = ['card', 'principle', 'recall', 'reflection', 'retryComparison'].includes(line.kind);
   if (!reviewLine && !chatMode) el.body.replaceChildren();
   if (line.kind === 'say' && !chatMode) showCharacter(line);
   else if (reviewLine || line.kind === 'choiceSignal') hideCharacter();
@@ -507,7 +507,13 @@ function render(line, target = el.body) {
       box.append(gesture);
     }
   }
-  if (line.kind === 'card') {
+  if (line.kind === 'card' || line.kind === 'principle') {
+    if (line.eyebrow) {
+      const eyebrow = document.createElement('p');
+      eyebrow.className = 'principle-eyebrow';
+      eyebrow.textContent = line.eyebrow;
+      box.append(eyebrow);
+    }
     const title = document.createElement('h3');
     title.textContent = line.title;
     const p = document.createElement('p');
@@ -564,14 +570,19 @@ async function summaryLines(node) {
   // 기존 데이터의 조건과 우선순위를 그대로 사용한다.
   const earlier = enterNode(segment.nodes['REVIEW-EARLIER'], state);
   const index = await loadLearningExampleIndex();
+  const commonLines = enterNode(node, state);
+  const principles = commonLines.filter(line => line.kind === 'principle');
+  const reflections = commonLines.filter(line => line.kind !== 'principle');
   return [
-    { kind: 'note', text: '내가 실제로 고른 말부터 살펴보고, 두 대화 방법을 게임 속 예시와 연결해 봅시다.' },
+    { kind: 'note', text: '먼저 교과서에서 배운 두 대화 원칙을 확인한 뒤, 그 원칙을 기준으로 내가 고른 말을 살펴봅시다.' },
+    ...principles,
+    { kind: 'note', text: '아래는 위 원칙을 기준으로 정리한 나의 실제 선택과 해슬의 반응입니다.' },
+    learningExampleLine('empathy', index),
+    learningExampleLine('mediation', index),
     ...enterNode(segment.nodes['REVIEW-LAST'], state),
     ...earlier,
     ...enterNode(segment.nodes['REVIEW-BALANCE'], state),
-    learningExampleLine('empathy', index),
-    learningExampleLine('mediation', index),
-    ...enterNode(node, state),
+    ...reflections,
   ];
 }
 
@@ -636,9 +647,9 @@ function wrapCanvasText(ctx, text, maxWidth) {
 
 function summaryImageBlocks(summary) {
   return Array.from(summary.querySelectorAll('.line')).map(line => ({
-    title: line.querySelector('h3')?.innerText || '',
-    text: Array.from(line.querySelectorAll('p')).map(item => item.innerText).join('\n') || line.innerText,
-    tone: line.classList.contains('line--reflection') ? 'reflection' : 'normal',
+    title: [line.querySelector('.principle-eyebrow')?.innerText, line.querySelector('h3')?.innerText].filter(Boolean).join(' | '),
+    text: Array.from(line.querySelectorAll('p')).filter(item => !item.classList.contains('principle-eyebrow')).map(item => item.innerText).join('\n') || line.innerText,
+    tone: line.classList.contains('line--principle') ? 'principle' : (line.classList.contains('line--reflection') ? 'reflection' : 'normal'),
   }));
 }
 
@@ -673,11 +684,11 @@ function downloadLearningSummary(button) {
   ctx.fillText('마음을 잇는 대화 · 나의 선택 돌아보기', padding, 142);
   let y = 205;
   for (const block of prepared) {
-    ctx.fillStyle = block.tone === 'reflection' ? '#F2E7C8' : '#FFFaf0';
+    ctx.fillStyle = block.tone === 'principle' ? '#EAF0F5' : (block.tone === 'reflection' ? '#F2E7C8' : '#FFFaf0');
     const blockHeight = block.titleLines.length * 48 + block.textLines.length * 42 + 48;
     ctx.fillRect(padding - 24, y - 30, contentWidth + 48, blockHeight);
     if (block.titleLines.length) {
-      ctx.fillStyle = '#B94738';
+      ctx.fillStyle = block.tone === 'principle' ? '#263A51' : '#B94738';
       ctx.font = '700 34px "Malgun Gothic", sans-serif';
       for (const line of block.titleLines) {
         ctx.fillText(line, padding, y);
