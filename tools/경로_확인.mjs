@@ -285,7 +285,7 @@ expect('06 B 압박 해설', pressureSummary.some(text => text.includes('참여�
 expect('06 C 대신 결정 해설', stopSummary.some(text => text.includes('결정을 대신했어요')), true);
 expect('06 공감 방법 5가지', happySummary.some(text => text.includes('상대방의 말에 경청하며 집중하기')), true);
 expect('06 갈등 조정 방법 7가지', happySummary.some(text => text.includes('갈등을 악화시킬 수 있는 표현 경계하기')), true);
-expect('06 학습지 성찰 질문', happySummary.includes('같은 뜻을 전하면서, 지금은 어떻게 말하고 싶나요? 한 문장으로 써 보세요.'), true);
+expect('06 제외한 마지막 성찰 문항', happySummary.some(text => text.includes('같은 뜻을 전하면서, 지금은 어떻게 말하고 싶나요?')), false);
 expect('06 최근 미해결 우선', selectedReviewSegment({ S1: '미해결', S2: '해결', S3: '미해결', S4: '미해결' }), 'S4');
 expect('06 부드러운 오답 최근 구간 우선', selectedReviewSegment({ S1: '해결', S2: '해결', S3: '해결', S4: '해결' }, ['S1-01-D', 'S2-01-D', 'S4-01-D']), 'S4');
 expect('06 최근 회복 구간 우선', selectedReviewSegment({ S1: '해결', S2: '해결', S3: '해결', S4: '해결' }, [], ['recovery:S1-01-C', 'recovery:S3-02-C']), 'S3');
