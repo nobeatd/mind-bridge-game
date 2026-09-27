@@ -1,6 +1,6 @@
 // 화면만 그린다. 판정 규칙을 여기에 두지 않는다.
 import { createState, normalizeState, cloneProgress, saveCheckpoint, restoreProgress } from './state.js';
-import { loadSegment, enterNode, visibleOptions, choose, resolveNext } from './engine.js';
+import { loadSegment, enterNode, visibleOptions, choose, resolveNext, resolveOption } from './engine.js';
 import { saveSession, loadSession, clearSession, saveTextSize, loadTextSize } from './storage.js';
 
 const SEGMENTS = {
@@ -56,6 +56,23 @@ let pending = [];      // 아직 보여 주지 않은 줄
 let onDone = () => {}; // 줄을 다 보여 준 뒤 '다음'을 눌렀을 때 할 일
 let suppressNextPlaceTransition = false;
 let chatMode = false;
+let learningExampleIndex = null;
+let learningExampleIndexPromise = null;
+
+const METHOD_NAMES = {
+  공1: '상대방의 말에 경청하며 집중하기',
+  공2: '눈 맞춤, 고개 끄덕임 등 상대방의 말에 반응하기',
+  공3: '상대방이 말을 이어 가게 맞장구치거나 질문하기',
+  공4: '상대방의 생각과 감정을 이해하고 자신의 말로 요약하거나 정리하기',
+  공5: '상대방과 공감을 형성할 수 있는 자신의 경험 공유하기',
+  조1: '자신과 상대방의 생각, 감정, 욕구를 파악하기',
+  조2: '갈등이 발생한 원인 분석하기',
+  조3: '사건에 관한 주관적 해석을 배제하고 객관적으로 전달하기',
+  조4: '상황이나 사건에 관한 자신의 감정이나 욕구를 진솔하게 표현하기',
+  조5: '자신이 상대방에게 바라는 바를 구체적으로 요청하기',
+  조6: '상대의 의견과 감정을 존중하기',
+  조7: '갈등을 악화시킬 수 있는 표현 경계하기',
+};
 
 // 이전 버전에서 성찰 도중 저장한 학생도 새 최종 정리 화면으로 이어 간다.
 const LEGACY_REVIEW_NODES = new Set([
@@ -192,9 +209,64 @@ function preloadCharacterSprites() {
   });
 }
 
+// 최종 정리에서 실제 선택을 교과서 방법과 연결하기 위한 읽기 전용 색인이다.
+// 배열 순서가 게임 진행 순서이므로, 뒤의 후보일수록 최종 결과에 가까운 장면이다.
+function loadLearningExampleIndex() {
+  if (learningExampleIndexPromise) return learningExampleIndexPromise;
+  const paths = [SEGMENTS.S1, SEGMENTS.S2, SEGMENTS.S3, SEGMENTS.S4, SEGMENTS.S5];
+  learningExampleIndexPromise = Promise.all(paths.map(loadSegment)).then(segments => {
+    learningExampleIndex = segments.flatMap(data => Object.entries(data.nodes).flatMap(([nodeId, node]) =>
+      Object.entries(node.options || {}).map(([key, option]) => ({
+        id: `${nodeId}-${key}`,
+        nodeId,
+        key,
+        node,
+        option,
+        location: `${data.title} · ${node.title}`,
+      }))
+    ));
+    return learningExampleIndex;
+  });
+  return learningExampleIndexPromise;
+}
+
+function methodNames(methods) {
+  return (methods || []).map(method => METHOD_NAMES[method]).filter(Boolean).join(' · ');
+}
+
+function responseText(choiceId) {
+  return (state.responses[choiceId] || [])
+    .filter(line => line.kind === 'say' && line.who === '해슬')
+    .map(line => line.text)
+    .join(' ');
+}
+
+function learningExampleLine(area, index) {
+  const areaName = area === 'empathy' ? '공감하며 말하기' : '갈등을 조정하며 말하기';
+  const actual = [...state.choices].reverse().map(id => index.find(item => item.id === id))
+    .find(item => item?.option.appropriate && item.option.area === area);
+  if (actual) {
+    const reaction = responseText(actual.id);
+    return {
+      kind: 'card',
+      title: `내가 사용한 ${areaName}`,
+      text: `가장 마지막에 사용한 장면: ${actual.location}\n\n내가 고른 말: “${state.lines[actual.id]}”${reaction ? `\n해슬의 반응: “${reaction}”` : ''}\n\n이 선택에는 ${methodNames(actual.option.method)} 원칙이 반영되어 있습니다. ${area === 'empathy' ? '상대의 생각과 감정을 더 듣거나, 내가 이해한 내용이 맞는지 확인하는 말입니다.' : '나와 상대의 바람을 함께 살피고, 존중하며 다음에 할 일을 정하는 말입니다.'}`,
+    };
+  }
+
+  const fallback = [...index].reverse().find(item => item.option.appropriate && item.option.area === area);
+  const option = resolveOption(fallback.nodeId, fallback.key, fallback.option, state);
+  return {
+    kind: 'card',
+    title: `${areaName} — 다음에 선택해 볼 말`,
+    text: `이번 플레이에서는 ${areaName} 원칙이 반영된 선택을 고르지 않았습니다.\n\n이걸 선택했다면 더 좋았을 거야.\n장면: ${fallback.location}\n선택할 말: “${option.text}”\n\n이 선택에는 ${methodNames(option.method)} 원칙이 반영되어 있습니다. ${area === 'empathy' ? '상대의 생각과 감정을 확인한 뒤 대화를 이어 갈 수 있습니다.' : '서로의 바람을 존중하면서 함께 할 일을 구체적으로 정할 수 있습니다.'}`,
+  };
+}
+
 async function start() {
   wireControls();
   preloadCharacterSprites();
+  loadLearningExampleIndex();
   applyTextSize(loadTextSize(window.localStorage));
   const saved = loadSession(window.localStorage);
   state = normalizeState(saved?.state);
@@ -271,7 +343,7 @@ async function goto(id) {
   document.body.classList.remove('choosing');
 
   if (id === 'REVIEW-SUMMARY') {
-    renderLearningSummary(node);
+    await renderLearningSummary(node);
     return;
   }
 
@@ -487,20 +559,23 @@ function render(line, target = el.body) {
   remember(line);
 }
 
-function summaryLines(node) {
+async function summaryLines(node) {
   // REVIEW-EARLIER가 먼저 대표 장면을 기록한다. 이후의 개인별 해설은
   // 기존 데이터의 조건과 우선순위를 그대로 사용한다.
   const earlier = enterNode(segment.nodes['REVIEW-EARLIER'], state);
+  const index = await loadLearningExampleIndex();
   return [
-    { kind: 'note', text: '게임에서 고른 말과 교과서의 대화 방법을 함께 살펴보세요.' },
+    { kind: 'note', text: '내가 실제로 고른 말부터 살펴보고, 두 대화 방법을 게임 속 예시와 연결해 봅시다.' },
     ...enterNode(segment.nodes['REVIEW-LAST'], state),
     ...earlier,
     ...enterNode(segment.nodes['REVIEW-BALANCE'], state),
+    learningExampleLine('empathy', index),
+    learningExampleLine('mediation', index),
     ...enterNode(node, state),
   ];
 }
 
-function renderLearningSummary(node) {
+async function renderLearningSummary(node) {
   el.advance.hidden = true;
   el.body.replaceChildren();
   el.body.classList.add('body--summary');
@@ -511,7 +586,7 @@ function renderLearningSummary(node) {
   title.className = 'learning-summary__title';
   title.textContent = '학습 내용 정리';
   summary.append(title);
-  for (const line of summaryLines(node)) render(line, summary);
+  for (const line of await summaryLines(node)) render(line, summary);
   el.body.append(summary);
   showSummaryDownload();
   el.body.scrollTop = 0;
