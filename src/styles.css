@@ -289,6 +289,7 @@ body.reviewing .body {
   margin-bottom: 22px;
 }
 .learning-summary .line--card p { white-space: pre-line; }
+.learning-summary .line--principle p { white-space: pre-line; }
 .summary-download {
   display: grid;
   grid-template-columns: 58px 1fr;
@@ -380,6 +381,27 @@ body.reviewing .body {
   font-size: 18px;
 }
 .line--card p { font-size: 16px; line-height: 1.7; }
+.line--principle {
+  margin-top: 12px;
+  padding: 20px;
+  border: 2px solid var(--navy);
+  border-radius: 8px;
+  background: #eaf0f5;
+  box-shadow: inset 5px 0 0 var(--navy);
+}
+.principle-eyebrow {
+  margin: 0 0 5px !important;
+  color: var(--navy);
+  font-size: 12px !important;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+.line--principle h3 {
+  margin: 0 0 9px;
+  color: var(--navy-deep);
+  font-size: 20px;
+}
+.line--principle p { font-size: 16px; line-height: 1.75; }
 .line--recall {
   margin-top: -13px;
   padding: 14px 18px;
